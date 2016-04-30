@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    static final String API_KEY = "282JUYUBCHO368XH";
+    static final String API_KEY = "282JUYUBCHO368XH"; //these are provided by ThingSpeak
     static final String CHANNEL = "107907";
 
     TextView TempText;
@@ -49,25 +49,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TempText = (TextView) findViewById(R.id.tempdisp);
+        TempText = (TextView) findViewById(R.id.tempdisp);//our simple app has just 2 updatable text fields...
         RHText = (TextView) findViewById(R.id.rhdisp);
 
         mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         Log.d("MainActivity", "OnCreate");
-        update = (Button) findViewById(R.id.update_button);
+        update = (Button) findViewById(R.id.update_button);//...as well as a button to manually update
         update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateManual();
             }
         });
-        queue = Volley.newRequestQueue(this);
-        //updateManual();
-        ScheduledExecutorService scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
+        queue = Volley.newRequestQueue(this); //volley is a library that does json object requests via http in its own thread
+        ScheduledExecutorService scheduleTaskExecutor = Executors.newScheduledThreadPool(5); //the scheduled task executor will run a background service that updates the fields
 
-        // This schedule a runnable task every 2 minutes
+        // This schedules a runnable task every minute (for demo purposes)
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 updateManual();
@@ -86,17 +85,17 @@ public class MainActivity extends AppCompatActivity {
                         // mTxtDisplay.setText("Response: " + response.toString());
                         double rh = 0, temp = 0;
 
-                        try {
+                        try { //json object parsing
                             temp = response.getJSONArray("feeds").getJSONObject(response.getJSONArray("feeds").length() - 1).getDouble("field2");
                             rh = response.getJSONArray("feeds").getJSONObject(response.getJSONArray("feeds").length() - 1).getDouble("field1");
 
                         } catch (JSONException e) {
                             Log.d("MainActivity", "Didn't work");
                         }
-                        if(rh < 63 || rh > 74 || temp < 63 || temp > 74) {
-                            setNotification(temp, rh);
+                        if(rh < 63 || rh > 74 || temp < 63 || temp > 74) { 
+                            setNotification(temp, rh);//if the humidity/temp is outside normal boundaries, alert the user
                         }
-                        else mNotificationManager.cancelAll();
+                        else mNotificationManager.cancelAll();//otherwise cancel any pending notifications
 
                         TempText.setText(Double.toString(temp) + "°F");
                         RHText.setText(Double.toString(rh) + "%");
@@ -117,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     void setNotification(double t, double rh) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.cigar)
+                        .setSmallIcon(R.drawable.cigar) //a nice cigar icon from the Noun Project
                         .setContentTitle("Your humidor is in need of attention")
                         .setContentText("RH = "+Double.toString(rh)+"%   T = "+Double.toString(t));
         // Creates an explicit intent for an Activity in your app
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
-    double cToF(double c) {
+    double cToF(double c) { //convert celsius to F
         return c * 9 / 5 + 32.0;
     }
 
